@@ -1,10 +1,15 @@
 # goautoit
-golang invoke autoit function through AutoItX3.dll
+
+Expose [AutoIt](https://www.autoitscript.com/site/) functionality from Go.
+
+It uses directly the `AutoItX3_x64.dll`
+
+This is a fork of [shadow1163/goautoit](https://github.com/shadow1163/goautoit) with some additional functionality (for example it adds `WinKill`, `WinMenuSelectItem`, ...).
 
 ## Install
 
 ```golang
-go get -u github.com/shadow1163/goautoit
+go get -u github.com/panta/goautoit
 ```
 
 ## Example
