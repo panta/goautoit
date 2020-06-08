@@ -111,6 +111,7 @@ var (
 	winSetState             *syscall.LazyProc
 	winWait                 *syscall.LazyProc
 	winWaitActive           *syscall.LazyProc
+	winKill                 *syscall.LazyProc
 )
 
 func init() {
@@ -181,6 +182,7 @@ func init() {
 	winSetState = dll64.NewProc("AU3_WinSetState")
 	winWait = dll64.NewProc("AU3_WinWait")
 	winWaitActive = dll64.NewProc("AU3_WinWaitActive")
+	winKill = dll64.NewProc("AU3_WinKill")
 }
 
 // WinMinimizeAll -- all windows should be minimize
@@ -320,6 +322,29 @@ func WinWaitActive(szTitle string, args ...interface{}) int {
 	}
 
 	handle, _, lastErr := winWaitActive.Call(strPtr(szTitle), strPtr(szText), intPtr(nTimeout))
+	if int(handle) == 0 {
+		log.Print("timeout or failure!!!")
+		log.Println(lastErr)
+	}
+	return int(handle)
+}
+
+//WinKill -- kill a window
+//
+func WinKill(szTitle string, args ...interface{}) int {
+	var szText string
+	var ok bool
+	if len(args) == 0 {
+		szText = ""
+	} else if len(args) == 1 {
+		if szText, ok = args[0].(string); !ok {
+			panic("szText must be a string")
+		}
+	} else {
+		panic("Too many parameters")
+	}
+
+	handle, _, lastErr := winKill.Call(strPtr(szTitle), strPtr(szText))
 	if int(handle) == 0 {
 		log.Print("timeout or failure!!!")
 		log.Println(lastErr)
