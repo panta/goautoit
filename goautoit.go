@@ -110,6 +110,7 @@ var (
 	winGetState             *syscall.LazyProc
 	winSetState             *syscall.LazyProc
 	winWait                 *syscall.LazyProc
+	winWaitActive           *syscall.LazyProc
 )
 
 func init() {
@@ -179,6 +180,7 @@ func init() {
 	winGetState = dll64.NewProc("AU3_WinGetState")
 	winSetState = dll64.NewProc("AU3_WinSetState")
 	winWait = dll64.NewProc("AU3_WinWait")
+	winWaitActive = dll64.NewProc("AU3_WinWaitActive")
 }
 
 // WinMinimizeAll -- all windows should be minimize
@@ -285,6 +287,39 @@ func WinWait(szTitle string, args ...interface{}) int {
 	}
 
 	handle, _, lastErr := winWait.Call(strPtr(szTitle), strPtr(szText), intPtr(nTimeout))
+	if int(handle) == 0 {
+		log.Print("timeout or failure!!!")
+		log.Println(lastErr)
+	}
+	return int(handle)
+}
+
+//WinWaitActive -- wait window to active
+//
+func WinWaitActive(szTitle string, args ...interface{}) int {
+	var szText string
+	var nTimeout int
+	var ok bool
+	if len(args) == 0 {
+		szText = ""
+		nTimeout = 0
+	} else if len(args) == 1 {
+		if szText, ok = args[0].(string); !ok {
+			panic("szText must be a string")
+		}
+		nTimeout = 0
+	} else if len(args) == 2 {
+		if szText, ok = args[0].(string); !ok {
+			panic("szText must be a string")
+		}
+		if nTimeout, ok = args[1].(int); !ok {
+			panic("nTimeout must be a int")
+		}
+	} else {
+		panic("Too many parameters")
+	}
+
+	handle, _, lastErr := winWaitActive.Call(strPtr(szTitle), strPtr(szText), intPtr(nTimeout))
 	if int(handle) == 0 {
 		log.Print("timeout or failure!!!")
 		log.Println(lastErr)
