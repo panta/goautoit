@@ -112,6 +112,7 @@ var (
 	winWait                 *syscall.LazyProc
 	winWaitActive           *syscall.LazyProc
 	winKill                 *syscall.LazyProc
+	winMenuSelectItem       *syscall.LazyProc
 )
 
 func init() {
@@ -183,6 +184,7 @@ func init() {
 	winWait = dll64.NewProc("AU3_WinWait")
 	winWaitActive = dll64.NewProc("AU3_WinWaitActive")
 	winKill = dll64.NewProc("AU3_WinKill")
+	winMenuSelectItem = dll64.NewProc("AU3_WinMenuSelectItem")
 }
 
 // WinMinimizeAll -- all windows should be minimize
@@ -1219,6 +1221,35 @@ func Opt(option, value string) int {
 		log.Println(lastErr)
 	}
 	return int(ret)
+}
+
+//WinMenuSelectItem -- Select a menu item
+//
+func WinMenuSelectItem(szTitle string, szText string, args ...interface{}) int {
+	var szItems [8]string
+
+	if len(args) < 1 {
+		panic("Too few parameters")
+	} else if len(args) > 8 {
+		panic("Too many parameters")
+	}
+
+    for index, value := range args {
+        item, ok := value.(string)
+		if !ok {
+			panic("menu item must be a string")
+		}
+        szItems[index] = item
+    }
+
+	handle, _, lastErr := winMenuSelectItem.Call(strPtr(szTitle), strPtr(szText),
+	    strPtr(szItems[0]), strPtr(szItems[1]), strPtr(szItems[2]), strPtr(szItems[3]),
+	    strPtr(szItems[4]), strPtr(szItems[5]), strPtr(szItems[6]), strPtr(szItems[7]))
+	if int(handle) == 0 {
+		log.Print("timeout or failure!!!")
+		log.Println(lastErr)
+	}
+	return int(handle)
 }
 
 func findTermChr(buff []uint16) int {
